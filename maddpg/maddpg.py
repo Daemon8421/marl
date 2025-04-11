@@ -23,10 +23,15 @@ class MADDPG:
 
         self.replay_buffer = MultiAgentReplayBuffer(buffer_size, self.state_dim, self.obs_dims, self.action_dims, self.n_agents, batch_size)
 
-    def choose_action(self, raw_obs):
+    def choose_action(self, raw_obs, noise_scale):
         actions = []
         for i, agent in enumerate(self.agents):
             action = agent.choose_action(raw_obs[i])
+
+            noise = np.random.randn(*action.shape).astype(action.dtype) * noise_scale
+            action += noise
+            action = np.clip(action, self.action_boundary[i][0], self.action_boundary[i][1])
+
             actions.append(action)
         
         return actions
@@ -74,7 +79,7 @@ class MADDPG:
             # TODO: 是否保存计算图？
             critic_loss = F.mse_loss(y, y_target)
             self.agents[i].critic.optimizer.zero_grad()
-            critic_loss.backward()
+            critic_loss.backward(retain_graph=True)
             self.agents[i].critici.optimizer.step()
 
             # 当前时间步的动作预测使用主网络
@@ -86,7 +91,7 @@ class MADDPG:
             q_value = self.agents[i].critic(state, th.cat(mixture_action, dim=1)).flatten()
             actor_loss = - q_value.mean()
             self.agents[i].actor.optimizer.zero_grad()
-            actor_loss.backward()
+            actor_loss.backward(retain_graph=True)
             self.agents[i].actor.optimizer.step()
         
         for i in range(self.n_agents):
@@ -105,10 +110,11 @@ class MADDPG:
             state = env.state()
             n_steps = 0
             data = dict.fromkeys(self.agent_names, 0)
+            noise_scale = 1 - episode / n_episodes
 
             while True:
                 # TODO: 噪音应该越来越小
-                action = self.choose_action(list(obs.values()))
+                action = self.choose_action(list(obs.values()), noise_scale)
                 obs_, reward, termination, truncation, _ = env.step(dict(zip(self.agent_names, action)))
                 new_state = env.state()
 

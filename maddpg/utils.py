@@ -24,7 +24,7 @@ def plot_reward_curve(reward_data, fig_name='img/simple_adversary.svg'):
 
     # 设置坐标轴范围（自动扩展5%的空白区域）
     plt.xlim(0.9, n_episodes + 0.1)
-    plt.ylim(0, max(max(rewards) for rewards in reward_data.values()) * 1.05)
+    plt.ylim(min(min(rewards) for rewards in reward_data.values()) * 1.05, max(max(rewards) for rewards in reward_data.values()) * 1.05)
 
     # 添加网格和图例（位置优化）
     plt.grid(True, linestyle='--', alpha=0.6)

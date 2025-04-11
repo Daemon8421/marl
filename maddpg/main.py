@@ -6,4 +6,4 @@ if __name__ == '__main__':
     env = simple_adversary_v3.parallel_env(render_mode=None, continuous_actions=True)
     env.reset(seed)
     model = MADDPG(env)
-    model.train(50000)
+    model.train(10000)
