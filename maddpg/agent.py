@@ -36,12 +36,11 @@ class Agent:
         action = self.actor(obs)
         action = th.squeeze(action).detach().cpu()
         
-        noise = th.randn_like(action)
-        action = action + noise
+        # noise = th.randn_like(action)
+        # action = action + noise
         
-        # 加噪音后需要再修剪 action
-        action = th.clamp(action, self.action_low, self.action_high)
-        # print(action)
+        # # 加噪音后需要再修剪 action
+        # action = th.clamp(action, self.action_low, self.action_high)
         
         return action.numpy()
     
