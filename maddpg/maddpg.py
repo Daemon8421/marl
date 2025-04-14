@@ -111,6 +111,7 @@ class MADDPG:
             critic_loss = F.mse_loss(y, y_target)
             self.agents[i].critic.optimizer.zero_grad()
             critic_loss.backward(retain_graph=True)
+            # critic_loss.backward()
             clip_grad_norm_(self.agents[i].critic.parameters(),
                             self.grad_norm_clip)
 
@@ -137,6 +138,7 @@ class MADDPG:
             actor_loss = -q_value.mean()
             self.agents[i].actor.optimizer.zero_grad()
             actor_loss.backward(retain_graph=True)
+            # actor_loss.backward()
             clip_grad_norm_(self.agents[i].actor.parameters(),
                             self.grad_norm_clip)
 
