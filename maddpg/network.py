@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torch.nn.init as init
+from utils import ortho_init
 
 
 class CriticNetwork(nn.Module):
@@ -16,8 +17,12 @@ class CriticNetwork(nn.Module):
         os.makedirs(chkpt_dir, exist_ok=True)
 
         self.fc1 = nn.Linear(state_dim + sum(action_dims), fc1_dim)
+        # init.orthogonal_(self.fc1.weight, gain=1.0)
         self.fc2 = nn.Linear(fc1_dim, fc2_dim)
+        # init.orthogonal_(self.fc2.weight, gain=1.0)
         self.q = nn.Linear(fc2_dim, 1)
+
+        ortho_init([self.fc1, self.fc2])
 
         # TODO: 正交初始化g权重
         # self.q = nn.Sequential(
@@ -53,8 +58,12 @@ class ActorNetwork(nn.Module):
         os.makedirs(chkpt_dir, exist_ok=True)
 
         self.fc1 = nn.Linear(obs_dim, fc1_dim)
+        # init.orthogonal_(self.fc1.weight, gain=1.0)
         self.fc2 = nn.Linear(fc1_dim, fc2_dim)
+        # init.orthogonal_(self.fc2.weight, gain=1.0)
         self.pi = nn.Linear(fc2_dim, action_dim)
+
+        ortho_init([self.fc1, self.fc2])
 
         self.device = th.device('cuda:0' if th.cuda.is_available() else 'cpu')
         self.action_low = th.tensor(action_low,

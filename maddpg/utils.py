@@ -1,7 +1,38 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import torch as th
+import torch.nn.init as init
+import random
+from datetime import datetime
 
 
+# 随机性控制
+def set_seed(seed=42):
+    th.manual_seed(seed)
+    if th.cuda.is_available():
+        th.cuda.manual_seed_all(seed)
+
+    np.random.seed(seed)
+
+    random.seed(seed)
+
+
+def ortho_init(layers, gain=1.0):
+    for layer in layers:
+        init.orthogonal_(layer.weight, gain=gain)
+        init.zeros_(layer.bias)
+
+
+def gen_fig_name(n_episodes=None):
+    now = datetime.now()
+    fn = f'img/{now.month}_{now.day}_{now.hour}_{now.minute}'
+    if n_episodes is not None:
+        fn += f'_{int(n_episodes)}'
+    fn += '.svg'
+    return fn
+
+
+# 绘制图像
 def plot_reward_curve(reward_data, fig_name='img/simple_adversary.svg'):
     # 创建画布和坐标轴（设置DPI和尺寸使图像更清晰）
     plt.figure(figsize=(8, 5), dpi=100)
@@ -16,7 +47,8 @@ def plot_reward_curve(reward_data, fig_name='img/simple_adversary.svg'):
         # 平滑处理
         rewards = np.array(rewards, dtype=np.float32)
         for idx in range(len(rewards) - 1, -1, -1):
-            rewards[idx] = sum(rewards[max(idx - 50 + 1, 0):idx + 1]) / 50
+            n = min(50, idx + 1)
+            rewards[idx] = sum(rewards[max(idx - 50 + 1, 0):idx + 1]) / n
 
         plt.plot(episodes, rewards, label=agent, linewidth=2, alpha=0.8)
 
